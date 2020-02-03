@@ -76,7 +76,9 @@ namespace CoreCodeCamp.Controllers
             }
         }
 
+        [HttpPost]
         public async Task<ActionResult<CampModel>> Post(CampModel model)
+            //adds a new item and return the location and data
         {
             try
             {
@@ -100,7 +102,7 @@ namespace CoreCodeCamp.Controllers
                 _repository.Add(camp);
                 if(await _repository.SaveChangesAsync())
                 {
-                    return Created("", _mapper.Map<CampModel>(camp));
+                    return Created(location, _mapper.Map<CampModel>(camp));
                 }
 
             }
@@ -112,6 +114,7 @@ namespace CoreCodeCamp.Controllers
             return BadRequest();
         }
 
+        [HttpPut("{moniker}")]
         public async Task<ActionResult<CampModel>> Put(string moniker, CampModel model)
         {
             try
@@ -131,6 +134,27 @@ namespace CoreCodeCamp.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
             }
             return BadRequest();
+        }
+        [HttpDelete("{moniker}")]
+        public async Task<IActionResult> Delete(string moniker)
+        {
+            try
+            {
+                var oldCamp = _repository.GetCampAsync(moniker);
+                if (oldCamp == null) return NotFound();
+
+                _repository.Delete(oldCamp);
+
+                if(await _repository.SaveChangesAsync())
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+            return BadRequest("Failed to delete the camp");
         }
     }
 }
